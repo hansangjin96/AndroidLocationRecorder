@@ -144,6 +144,7 @@ public class MyService extends Service implements LocationListener {
                     }
                 }
             };
+
             myThread.start();
         } else {
             Toast toast1 = Toast.makeText(this, "이미 서비스 실행중입니다.\n서비스 종료를 하신 후 눌러주세요.", Toast.LENGTH_SHORT);
