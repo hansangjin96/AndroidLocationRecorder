@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -31,14 +32,74 @@ public class MyService extends Service implements LocationListener {
     private Thread myThread;
     private int mCount;
 
-    double Latitude;
-    double Longitude;
+    //배열 선언
+    double Latitude[] = new double[24];
+    double Longitude[] = new double[24];
+    int num=0;
     //location listener
 
+    /*
     @Override
     public IBinder onBind(Intent intent) {
+        //이 부분에서 intetn로 위도 경도 배열을 반환함
         return null;
+    }*/
+
+    //콜백부분 정의
+
+    public class MainServiceBinder extends Binder {
+        MyService getService() {
+            return MyService.this; //현재 서비스를 반환.
+        }
     }
+    private final IBinder mBinder = new MainServiceBinder();
+
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        return mBinder;
+    }
+    public interface ICallback {
+        public void recvData(); //액티비티에서 선언한 콜백 함수.
+        public void recvData(double lat, double lon);
+
+    }
+    private ICallback mCallback;
+
+    public int test()
+    {
+        return 50;
+    }
+
+    public void registerCallback(ICallback cb) {
+        mCallback = cb;
+    }
+
+    public void myServiceFunc(){
+        //서비스에서 처리할 내용
+        mCallback.recvData(Latitude[num],Longitude[num]);
+        num++;
+    }
+    //서비스에서 액티비티 함수 호출은..
+    //mCallback.recvData();
+    //여기까지 콜백
+
+    /* 쓰잘데기 없는거
+    public class LocalBinder extends Binder {
+        MyService getService()
+        {
+            return MyService.this;
+        }
+    }
+
+    public double[] retlong(){
+        return Longitude;
+    }
+
+    public double[] retlat(){
+        return Latitude;
+    }*/
+
 
     //location 끝
     @Override
@@ -67,15 +128,15 @@ public class MyService extends Service implements LocationListener {
                 @Override
                 public void run() {
 
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i < Longitude.length; i++) {
                         try {
                             String locationProvider = LocationManager.GPS_PROVIDER;
                             Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
-                            Longitude = lastKnownLocation.getLatitude();
-                            Latitude = lastKnownLocation.getLatitude();
-                            System.out.println("longtitude=" + Longitude + ", latitude=" + Longitude);
+                            Longitude[i] = lastKnownLocation.getLongitude();
+                            Latitude[i] = lastKnownLocation.getLatitude();
+                            System.out.println("longtitude=" + Longitude[i] + ", latitude=" + Latitude[i]);
                             mCount++;
-                            Thread.sleep(1000);
+                            Thread.sleep(1200000);
                         } catch (InterruptedException e) {
                             break;
                         }
@@ -89,12 +150,18 @@ public class MyService extends Service implements LocationListener {
             toast1.setGravity(Gravity.TOP, 0, 0);
             toast1.show();
         }
+        //return super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        for(int i=0;i<Longitude.length;i++)
+        {
+            System.out.println(i+"배열에 저장되니? "+Longitude[i]);
+        }
+
         Toast toast = Toast.makeText(this, "Service is destroyed", Toast.LENGTH_SHORT);
         toast.setGravity(Gravity.TOP, 0, 0);
         toast.show();
@@ -105,7 +172,6 @@ public class MyService extends Service implements LocationListener {
             mCount = 0;
         }
     }
-
 
     @Override
     public void onLocationChanged(Location location) {
