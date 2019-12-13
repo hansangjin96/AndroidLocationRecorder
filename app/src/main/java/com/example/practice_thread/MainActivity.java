@@ -7,12 +7,15 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.app.FragmentManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
@@ -33,6 +36,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+    public static final String CHANNEL_ID = "exampleNotification";
     //gps부분
     /*
     Button myButton;
@@ -105,32 +109,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //gpssssssssssssssssssssssssssssssssssssssssssssss
-        /*
-        try {
-            if (ActivityCompat.checkSelfPermission(this, myPermission) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{myPermission}, REQUEST_CODE_PERMISSION);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        myButton = (Button) findViewById(R.id.button3);
+        createNotificationChannel();
 
-        myButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                myService = new MyService(MainActivity.this);
-                if (myService.canGetLocation()) {
-                    double latitude = myService.getLatitude();
-                    double longitude = myService.getLongitude();
-                    Toast.makeText(getApplicationContext(), "당신의 위치는 경도: " + latitude + " " + "위도: " + longitude, Toast.LENGTH_LONG).show();
-                } else {
-                    myService.showSettingAlert();
-                }
-            }
-        });
-         */
-        //gpssssssssssssssssssssssssssssssssssssssssssssss끝
         //GoogleMap
         fragmentManager = getFragmentManager();
 
@@ -180,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 16));
     }
 
-    private static final int REQUEST_CODE_PERMISSIONS = 1000*60*30;
+    private static final int REQUEST_CODE_PERMISSIONS = 1000;
 
     public void gpspermissionCheck(View view) {
         //위치받아오는부분
@@ -212,6 +192,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Toast.makeText(getApplicationContext(),"눌리긴 하니", Toast.LENGTH_LONG).show();
     }
 
+    private void createNotificationChannel(){
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.O){
+            NotificationChannel serviceChannel = new NotificationChannel(CHANNEL_ID,"Example Service Channel", NotificationManager.IMPORTANCE_DEFAULT);
+
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
+        }
+    }
     public void stopService(View view) {
         Intent intent = new Intent(this, MyService.class);
         stopService(intent);

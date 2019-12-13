@@ -2,6 +2,8 @@ package com.example.practice_thread;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,6 +21,7 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
@@ -26,6 +29,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.concurrent.Executor;
+
+import static com.example.practice_thread.MainActivity.CHANNEL_ID;
 
 public class MyService extends Service implements LocationListener {
     //쓰레드
@@ -91,11 +96,9 @@ public class MyService extends Service implements LocationListener {
             return MyService.this;
         }
     }
-
     public double[] retlong(){
         return Longitude;
     }
-
     public double[] retlat(){
         return Latitude;
     }*/
@@ -104,17 +107,17 @@ public class MyService extends Service implements LocationListener {
     //location 끝
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //gps
-        /*
-        mFusedLocationClient.getLastLocation().addOnSuccessListener((Executor) this, new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                if(location != null) {
-                    Latitude = location.getLatitude();
-                    Longitude =location.getLongitude();
-                }
-            }
-        });*/
+        Intent notificationintent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationintent, 0);
+        Notification notification = new NotificationCompat.Builder(this,CHANNEL_ID)
+                .setContentTitle("Example service")
+                .setContentText("알림창")
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentIntent(pendingIntent)
+                .build();
+
+        startForeground(1, notification);
+
         final LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         //gps
@@ -136,7 +139,7 @@ public class MyService extends Service implements LocationListener {
                             Latitude[i] = lastKnownLocation.getLatitude();
                             System.out.println("longtitude=" + Longitude[i] + ", latitude=" + Latitude[i]);
                             mCount++;
-                            Thread.sleep(1200000);
+                            Thread.sleep(60000);
                         } catch (InterruptedException e) {
                             break;
                         }
