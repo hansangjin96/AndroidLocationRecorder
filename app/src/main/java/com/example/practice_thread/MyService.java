@@ -34,12 +34,9 @@ import java.util.concurrent.Executor;
 import static com.example.practice_thread.MainActivity.CHANNEL_ID;
 
 public class MyService extends Service implements LocationListener  {
-
-
     //쓰레드
     private Thread myThread;
     private int mCount;
-
 
     //블로그 gps 변수선언
     private  Context mContext = this;
@@ -52,7 +49,6 @@ public class MyService extends Service implements LocationListener  {
 
     // GPS 상태값
     boolean isGetLocation = false;
-
 
     Location location;
     double lat; // 위도
@@ -150,7 +146,7 @@ public class MyService extends Service implements LocationListener  {
         //스레드 생성해서 현재 위치를 지속적으로 갱신.
         if (myThread == null) {
             MainActivity.IsThreadIng = true;//쓰레드 실행중일때 백키 무효화
-            Toast.makeText(getApplicationContext(), "Service is started", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "위치 기록 시작", Toast.LENGTH_LONG).show();
             myThread = new Thread("My Thread") {
                 @Override
                 public void run() {
@@ -164,7 +160,7 @@ public class MyService extends Service implements LocationListener  {
                             Latitude[i] = location.getLatitude();
                             System.out.println("longtitude=" + Longitude[i] + ", latitude=" + Latitude[i]);
                             mCount++;
-                            Thread.sleep(1000);//1200000=20분
+                            Thread.sleep(1000*60*5);//1200000=20분
                         } catch (InterruptedException e) {
                             break;
                         }
@@ -187,7 +183,7 @@ public class MyService extends Service implements LocationListener  {
     public void onDestroy() {
         super.onDestroy();
 
-        Toast.makeText(getApplicationContext(), "Service is destroyed", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "위치 기록 종료", Toast.LENGTH_LONG).show();
 
         if (myThread != null) {
             myThread.interrupt();

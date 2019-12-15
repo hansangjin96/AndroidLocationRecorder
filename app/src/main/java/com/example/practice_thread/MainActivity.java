@@ -38,7 +38,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     //notification이랑 백키 무효화
     public static final String CHANNEL_ID = "exampleNotification";
-    public static boolean IsThreadIng= false;
+    public static boolean IsThreadIng = false;
 
     //gps부분
 
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button myButton, myButton2, myButton3, myButton4;
     boolean isService = false; // 서비스 중인 확인용
     int service_check = 0;
+    boolean permission_check = false;
 
     //gps전용 끝
 
@@ -87,18 +88,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void recvData(double latitude, double longitude) {
             lat[arrayLen] = latitude;
             lon[arrayLen] = longitude;
-            if(lat[arrayLen] !=0 && lon[arrayLen]!=0) {
-                Toast.makeText(getApplicationContext(), arrayLen+"번째 recv data : " + lat[arrayLen] + " " + lon[arrayLen], Toast.LENGTH_LONG).show();
+            if (lat[arrayLen] != 0 && lon[arrayLen] != 0) {
+                Toast.makeText(getApplicationContext(), (arrayLen + 1) + "번째 저장 위치 : \n" + "위도: " + lat[arrayLen] + "\n경도: " + lon[arrayLen], Toast.LENGTH_LONG).show();
                 init(latitude, longitude);
                 arrayLen++;
-            }
-            else if (arrayLen>=lat.length)
-            {
-                Toast.makeText(getApplicationContext(), "24 초과함 ", Toast.LENGTH_LONG).show();
-            }
-            else
-            {
-                Toast.makeText(getApplicationContext(), arrayLen+"번째 recv data : " + "0값이 들어감 \n 서비스 종료됨", Toast.LENGTH_LONG).show();
+            } else if (arrayLen >= lat.length) {
+                Toast.makeText(getApplicationContext(), "더 이상 마커를 표시할 수 없습니다.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), (arrayLen + 1) + "번째 기록이 부족합니다.", Toast.LENGTH_LONG).show();
             }
 
         }
@@ -139,11 +136,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         myButton4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(service_check==0)
-                {
+                if (service_check == 0) {
                     Toast.makeText(getApplicationContext(), "아직 서비스 시작 안함", Toast.LENGTH_LONG).show();
-                }
-                else {
+                } else {
                     mService.myServiceFunc();
                 }
             }
@@ -155,8 +150,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         LatLng location = new LatLng(37.559085, 126.998501);
         MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.title("시작위치");
-        markerOptions.snippet("요기");
+        markerOptions.title("개발자");
+        markerOptions.snippet("김승기, 한상진");
         markerOptions.position(location);
         mMap.addMarker(markerOptions);
         mMap.getUiSettings().setZoomGesturesEnabled(true);
@@ -167,8 +162,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         LatLng location = new LatLng(lati, longi);
         MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.title("위치" + arrayLen);
-        markerOptions.snippet("전철역");
+        markerOptions.title((arrayLen + 1) + "번째 위치");
         markerOptions.position(location);
         mMap.addMarker(markerOptions);
         mMap.getUiSettings().setZoomGesturesEnabled(true);
@@ -176,6 +170,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private static final int REQUEST_CODE_PERMISSIONS = 1000;
+    Button btn;
 
     public void gpspermissionCheck(View view) {
         //위치받아오는부분
@@ -186,6 +181,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return;
         } else {
             System.out.println("권한체크완료.");
+            Toast.makeText(getApplicationContext(), "권한 체크 완료.", Toast.LENGTH_LONG).show();
         }
         //위치받아오는부분 끝
     }
@@ -201,46 +197,54 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void startService(View view) {
-        IsThreadIng = true;
-        Intent intent = new Intent(this, MyService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        startService(intent);
-        service_check+=10;
-        arrayLen=0;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "권한체크 먼저 누르세요.", Toast.LENGTH_SHORT).show();
+        } else {
+            IsThreadIng = true;
+            Intent intent = new Intent(this, MyService.class);
+            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+            startService(intent);
+            service_check += 10;
+            arrayLen = 0;
+        }
     }
 
     public void stopService(View view) {
         IsThreadIng = false;
         if (!isService) {
             Toast.makeText(getApplicationContext(),
-                    "서비스중이 아닙니다, 종료 할 수 없음",
+                    "서비스중이 아닙니다.\n서비스를 시작해주세요.",
                     Toast.LENGTH_LONG).show();
         } else {
             Intent intent = new Intent(this, MyService.class);
             stopService(intent);
             unbindService(mConnection); // 서비스 종료
-            isService=!isService;
+            isService = !isService;
         }
     }
+
     //쓰레드 연결하기 버튼 클릭시 끝
     MyService myService;
+
     //notification생성
-    private void createNotificationChannel(){
-        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.O){
-            NotificationChannel serviceChannel = new NotificationChannel(CHANNEL_ID,"Example Service Channel", NotificationManager.IMPORTANCE_DEFAULT);
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(CHANNEL_ID, "Example Service Channel", NotificationManager.IMPORTANCE_DEFAULT);
 
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(serviceChannel);
         }
     }
+
     //백키 무효화
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event)
-    {
-        if (IsThreadIng == true&&event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (IsThreadIng == true && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+
             // handle back press
             // if (event.getAction() == KeyEvent.ACTION_DOWN)
             return true;
+
         }
         return super.dispatchKeyEvent(event);
     }

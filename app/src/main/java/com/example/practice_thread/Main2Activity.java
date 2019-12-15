@@ -33,6 +33,7 @@ public class Main2Activity extends AppCompatActivity {
         bt6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
                 Context context = v.getContext();
                 String msg = "사랑해";
                 Intent intent = new Intent(Intent.ACTION_SEND);
@@ -40,7 +41,7 @@ public class Main2Activity extends AppCompatActivity {
                 intent.putExtra(Intent.EXTRA_SUBJECT, "오빠 믿지 알림");
                 intent.putExtra(Intent.EXTRA_TEXT, msg);
                 intent.setPackage("com.kakao.talk");
-                startActivity(intent);
+
                 try {
                     startActivity(intent);
                 } catch (Exception e) {
@@ -48,29 +49,28 @@ public class Main2Activity extends AppCompatActivity {
                 }
 
 
-                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+
             }
         });
 
-        bt7 = findViewById(R.id.button7);//Dday
+        bt7 = findViewById(R.id.button7);//호텔예약
         bt7.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Main2Activity.this, MainActivity.class);
+                Intent intent = new Intent(Main2Activity.this, Main3Activity.class);
                 startActivity(intent);
-
-                overridePendingTransition(R.anim.fadein, R.anim.fadeout);
             }
         });
 
-        bt8 = findViewById(R.id.button8);//호텔예약
+        bt8 = findViewById(R.id.button8);//날씨
         bt8.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Main2Activity.this, MainActivity.class);
-                startActivity(intent);
-
                 overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+                Context context = v.getContext();
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.kr-weathernews.com/mweb/html/main.html?region=1171000000"));
+                context.startActivity(intent);
+
             }
         });
     }
