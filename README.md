@@ -1,4 +1,5 @@
 # AndroidLocationRecorder
-2019-10-29 ~ 2019-12-15
+시간마다 자신의 위치를 기록해 하루의 이동경로를 표시하는 앱 개발
 
-https://www.notion.so/Android-55b23bfd7fa5431d8d735332a92642cf
+
+https://www.notion.so/Location-Recorder-Android-6d0ad46339494c0099d7b91e9b093223
